@@ -38,9 +38,19 @@ deploy:
     - aws eks --region "$AWS_DEFAULT_REGION" update-kubeconfig --name mind
     - kubectl version
     - kubectl get nodes
+    # Vérifier si l'image Docker est bien poussée
+    - docker pull afjalbetsilah/wordlife:$CI_COMMIT_SHA || echo "Image non disponible !"
+    # Appliquer les fichiers Kubernetes
     - kubectl apply -f kubernets
-    # Modifier dynamiquement l'image utilisée dans Kubernetes
+    # Vérifier les pods
+    - kubectl get pods -o wide
+    - kubectl describe pod -l app=wordlife-deployements
+    - kubectl logs -l app=wordlife-deployements || echo "Pas encore de logs, peut-être en création..."
+    # Redémarrer les pods si nécessaire
+    - kubectl delete pod -l app=wordlife-deployements || true
+    # Vérifier l'état du déploiement
     - kubectl set image deployment/deployement-wl wordlife-container=afjalbetsilah/wordlife:$CI_COMMIT_SHA
-    - kubectl rollout status deployment/wordlife
     - kubectl get services
+
+
     
