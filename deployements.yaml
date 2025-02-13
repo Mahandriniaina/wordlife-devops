@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployement-wl
+spec:
+  replicas: 1
+  selector :
+    matchLabels: 
+     app: wordlife-deployements
+  template:
+    metadata:
+      labels:
+        app:  wordlife-deployements
+    spec: 
+      containers: 
+        - name: wordlife-container
+          image: afjalbetsilah/wordlife:latest
+          ports:
+          - containerPort: 8081

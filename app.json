@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "cfac3dd1-e29d-4623-94f4-9f0b1549c2e7"
+      }
+    },
+    "android": {
+      "package": "com.judicae.worldlife"
+    },
+    "ios": {
+      "bundleIdentifier": "com.judicae.worldlife"
+    }
+  }
+}

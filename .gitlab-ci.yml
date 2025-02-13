@@ -1,0 +1,43 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t afjalbetsilah/wordlife:latest .
+    - docker tag afjalbetsilah/wordlife:latest $CI_REGISTRY_IMAGE:latest
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+test:
+  stage: test
+  image: node:20
+  script:
+    - npm install
+
+deploy:
+  stage: deploy
+  image: alpine/k8s:1.31.4
+  script:
+    - echo "$KUBE_CONFIG" > kubeconfig.yaml
+    - export KUBECONFIG=kubeconfig.yaml
+    # Install AWS CLI
+    - apk add --no-cache aws-cli
+    # Configure AWS CLI with credentials
+    - aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+    - aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+    - aws configure set region "$AWS_DEFAULT_REGION"
+    # Verify AWS CLI configuration
+    - aws sts get-caller-identity
+    # Verify kubectl connectivity
+    - aws eks --region "$AWS_DEFAULT_REGION" update-kubeconfig --name mind
+    - kubectl version
+    - kubectl get nodes
+    - kubectl apply -f kubernets/
+    - kubectl get services
+    

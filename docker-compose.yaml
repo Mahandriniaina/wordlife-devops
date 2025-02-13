@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  react-native-app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: wordlife
+    ports:
+      - "8081:8081" # Redirige le port 8081 vers le port 80 pour un accès simplifié
+    volumes:
+      - .:/app # Synchronise les fichiers locaux avec le conteneur
+    environment:
+      - REACT_NATIVE_ENV=development # Variables d'environnement si nécessaire
+    command: npm start
