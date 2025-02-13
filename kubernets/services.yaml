@@ -4,7 +4,7 @@ metadata:
   name: wl-service
 spec:
   selector:
-    app: wordlife
+    app: wordlife-deployements
   type: LoadBalancer
   ports:
   - protocol: TCP
