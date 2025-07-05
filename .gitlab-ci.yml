@@ -24,7 +24,7 @@ update_helm_chart:
     - git config --global user.email "gitlab-ci@gitlab.com"
     - git config --global user.name "GitLab CI"
     - git clone https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.com/sr2623035/Wordlife_manifest.git
-    - cd nodejs-manifest
+    - cd Wordlife_manifest
     - sed -i "s|login_demo:.*|login_demo:${CI_COMMIT_SHORT_SHA}|g" loginapp/values.yaml
     - git add loginapp/values.yaml
     - git commit -m "Update Image to ${CI_COMMIT_SHORT_SHA}" || echo "No changes to commit"
