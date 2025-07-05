@@ -1,56 +1,33 @@
 stages:
   - build
-  - test
-  - deploy
+  - update_helm_chart
 
-build:
-  stage: build
+variables:
+  APP_NAME: login_demo
+  IMAGE_TAG: registry.gitlab.com/sr2623035/wordlife/$APP_NAME:$CI_COMMIT_SHORT_SHA
+
+build_image:
   image: docker:latest
+  stage: build
   services:
     - docker:dind
   script:
-    - docker build -t afjalbetsilah/wordlife:latest .
-    - docker tag afjalbetsilah/wordlife:latest $CI_REGISTRY_IMAGE:latest
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$IMAGE_TAG" .
+    - docker push "$IMAGE_TAG"
 
-test:
-  stage: test
-  image: node:20
+update_helm_chart:
+  stage: update_helm_chart
+  image: ubuntu:24.04
   script:
-    - npm install
-
-deploy:
-  stage: deploy
-  image: alpine/k8s:1.31.4
-  script:
-    - echo "$KUBE_CONFIG" > kubeconfig.yaml
-    - export KUBECONFIG=kubeconfig.yaml
-    # Installer AWS CLI
-    - apk add --no-cache aws-cli
-    # Configurer AWS CLI
-    - aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
-    - aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
-    - aws configure set region "$AWS_DEFAULT_REGION"
-    # Vérifier l'identité AWS
-    - aws sts get-caller-identity
-    # Vérifier la connectivité EKS
-    - aws eks --region "$AWS_DEFAULT_REGION" update-kubeconfig --name mind
-    - kubectl version
-    - kubectl get nodes
-    # Vérifier si l'image Docker est bien poussée
-    - docker pull afjalbetsilah/wordlife:$CI_COMMIT_SHA || echo "Image non disponible !"
-    # Appliquer les fichiers Kubernetes
-    - kubectl apply -f kubernets
-    # Vérifier les pods
-    - kubectl get pods -o wide
-    - kubectl describe pod -l app=wordlife-deployements
-    - kubectl logs -l app=wordlife-deployements || echo "Pas encore de logs, peut-être en création..."
-    # Redémarrer les pods si nécessaire
-    - kubectl delete pod -l app=wordlife-deployements || true
-    # Vérifier l'état du déploiement
-    - kubectl set image deployment/deployement-wl wordlife-container=afjalbetsilah/wordlife:$CI_COMMIT_SHA
-    - kubectl get services
-
-
-    
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "gitlab-ci@gitlab.com"
+    - git config --global user.name "GitLab CI"
+    - git clone https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.com/sr2623035/Wordlife_manifest.git
+    - cd nodejs-manifest
+    - sed -i "s|login_demo:.*|login_demo:${CI_COMMIT_SHORT_SHA}|g" loginapp/values.yaml
+    - git add loginapp/values.yaml
+    - git commit -m "Update Image to ${CI_COMMIT_SHORT_SHA}" || echo "No changes to commit"
+    - git push https://oauth2:${GITLAB_ACCESS_TOKEN}@gitlab.com/sr2623035/Wordlife_manifest.git HEAD:main
+  only:
+    - main
