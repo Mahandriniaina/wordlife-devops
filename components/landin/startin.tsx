@@ -45,7 +45,7 @@ const SignIn = () => {
       </View>
 
       {/* Titre */}
-      <Text style={styles.title}>Bienvenue Tous le mondeuuuuuu</Text>
+      <Text style={styles.title}>Bienvenue</Text>
       <Text style={styles.subtitle}>Veuillez vous connecter pour continuer Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nobis dignissimos et, unde soluta, voluptatum officia perferendis animi doloremque adipisci qui nihil nesciunt porro necessitatibus id. Ducimus officia nesciunt tenetur veritatis.</Text>
 
       {/* Formulaire d'email */}
