@@ -1,10 +1,9 @@
 replicaCount: 2
 
 image:
-  repository: docker.io/TON_DOCKERHUB/wordlife
+  repository: docker.io/m0203/wordlife
   tag: latest
   pullPolicy: IfNotPresent
 
 service:
-  type: NodePort
-  port: 80
+  type: Loadbalancer
