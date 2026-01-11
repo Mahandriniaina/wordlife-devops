@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Étape 6 : Copier les fichiers du projet
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
 # Étape 7 : Copier le reste des fichiers
 COPY . .

@@ -1,0 +1,49 @@
+pipeline {
+  agent any
+
+  environment {
+    IMAGE = "m0203/wordlife"
+    K8S_MASTER = "mahandry@192.168.250.132"
+    RELEASE = "wordlife"
+  }
+
+  stages {
+
+    stage('Clone') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Image') {
+      steps {
+        sh 'docker build -t $IMAGE:latest .'
+      }
+    }
+
+    stage('Push Image') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub',
+          usernameVariable: 'USER',
+          passwordVariable: 'PASS'
+        )]) {
+          sh '''
+            echo $PASS | docker login -u $USER --password-stdin
+            docker push $IMAGE:latest
+          '''
+        }
+      }
+    }
+
+    stage('Deploy Kubernetes') {
+      steps {
+        sh '''
+        ssh $K8S_MASTER "
+          helm upgrade --install $RELEASE ./manifest
+        "
+        '''
+      }
+    }
+  }
+}

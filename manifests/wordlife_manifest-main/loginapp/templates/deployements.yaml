@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: logindep2
-  name: {{ .Release.Name }}-logindep
+  name: {{ .Release.Name }}-wordlife
 spec:
-  replicas: 3
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: logindep2
+      app: wordlife
   template:
     metadata:
       labels:
-        app: logindep2
+        app: wordlife
     spec:
       containers:
-      - image: {{ .Values.image.repository }}
-        name: sample
+        - name: wordlife
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8081
       imagePullSecrets:
-      - name: helm-secret
+        - name: helm-secret
