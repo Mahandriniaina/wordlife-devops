@@ -17,5 +17,3 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8081
-      imagePullSecrets:
-        - name: helm-secret
