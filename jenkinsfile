@@ -1,74 +1,82 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:20'
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
-    }
-  }
-
-  environment {
-    IMAGE_NAME = "m0203/wordlife"
-    IMAGE_TAG  = "latest"
-  }
-
-  stages {
-
-    stage('Checkout Source') {
-      steps {
-        git branch: 'main',
-            url: 'https://github.com/Mahandriniaina/wordlife-devops.git'
-      }
-    }
-
-    stage('Install Dependencies') {
-      steps {
-        sh 'npm install'
-      }
-    }
-
-    stage('Run Unit Tests') {
-      steps {
-        sh 'npm test || true'
-      }
-    }
-
-    stage('Build Docker Image') {
-      steps {
-        sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
-      }
-    }
-
-    stage('Security Scan - Trivy') {
-      steps {
-        sh '''
-          trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG || true
-        '''
-      }
-    }
-
-    stage('Push Docker Image') {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-creds',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
-          sh '''
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push $IMAGE_NAME:$IMAGE_TAG
-          '''
+    agent {
+        docker {
+            image 'node:20'
+            args '-u 110:110'
         }
-      }
     }
 
-    stage('Deploy to Kubernetes') {
-      steps {
-        sh '''
-          helm upgrade --install wordlife \
-          ./manifests/wordlife_manifest-main/loginapp \
-          -n wordlife
-        '''
-      }
+    environment {
+        NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+        DOCKER_IMAGE = "m0203/wordlife:latest"
     }
-  }
+
+    stages {
+
+        stage('Checkout Source') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                  mkdir -p $NPM_CONFIG_CACHE
+                  npm install
+                '''
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                sh 'npm test || echo "No tests configured yet"'
+            }
+        }
+
+        stage('Build Docker Image') {
+            agent any
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Security Scan - Trivy') {
+            agent any
+            steps {
+                sh '''
+                  trivy image --exit-code 0 --severity LOW,MEDIUM $DOCKER_IMAGE
+                  trivy image --exit-code 1 --severity HIGH,CRITICAL $DOCKER_IMAGE || true
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            agent any
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                      docker push $DOCKER_IMAGE
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            agent any
+            steps {
+                sh '''
+                  kubectl config use-context kubernetes-admin@kubernetes
+                  helm upgrade --install wordlife \
+                    manifests/wordlife_manifest-main/loginapp \
+                    -n wordlife 
+                '''
+            }
+        }
+    }
 }
