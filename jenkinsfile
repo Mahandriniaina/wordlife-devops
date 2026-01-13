@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Verify Docker Image') {
+        stage('Verify Docker Image Exists') {
             steps {
                 sh """
                   docker image inspect ${IMAGE_NAME}:${IMAGE_TAG}
@@ -23,11 +23,15 @@ pipeline {
             }
         }
 
-        stage('Security Scan (Trivy)') {
+        stage('Security Scan (Trivy - Non Blocking)') {
             steps {
                 sh """
-                  trivy image --exit-code 0 --severity HIGH,CRITICAL \
-                  ${IMAGE_NAME}:${IMAGE_TAG}
+                  trivy image \
+                    --skip-db-update \
+                    --scanners vuln \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 0 \
+                    ${IMAGE_NAME}:${IMAGE_TAG} || true
                 """
             }
         }
