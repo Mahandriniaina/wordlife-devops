@@ -38,14 +38,14 @@ const Home = () => {
                     date={currentDate.toString()}
                     imageSource={require('../../assets/images/ats.png')}
                     price={250}
-                    userName="Judicaël Randriampanalindahy"
+                    userName="Mahandriniaina"
                 />
                 <Publication
                     contentText="lorem upsum"
                     date={currentDate.getDate().toString()}
                     imageSource={require('../../assets/images/logo.jpeg')}
                     price={250}
-                    userName="Judicaël Randriampanalindahy"
+                    userName="Mahandriniaina"
                 />
 
                 <Publication
@@ -53,21 +53,21 @@ const Home = () => {
                     date={currentDate.toString()}
                     imageSource={require('../../assets/images/atlas.png')}
                     price={250}
-                    userName="Judicaël Randriampanalindahy"
+                    userName="Mahandriniaina"
                 />
                 <Publication
                     contentText="Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima reprehenderit incidunt corrupti et repellat ipsum aliquam, nihil, doloribus magni nemo, quasi vel temporibus sint deleniti velit esse molestiae. Obcaecati, inventore."
                     date={currentDate.toString()}
                     imageSource={require('../../assets/images/atlas.png')}
                     price={250}
-                    userName="Judicaël Randriampanalindahy"
+                    userName="Mahandriniaina"
                 />
                 <Publication
                     contentText="Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima reprehenderit incidunt corrupti et repellat ipsum aliquam, nihil, doloribus magni nemo, quasi vel temporibus sint deleniti velit esse molestiae. Obcaecati, inventore."
                     date={currentDate.toString()}
                     imageSource={require('../../assets/images/images.jpg')}
                     price={250}
-                    userName="Judicaël Randriampanalindahy"
+                    userName="Mahandriniaina"
                 />
 
 
